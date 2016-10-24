@@ -270,7 +270,7 @@ server_fun <- function(input, output, session) {
     ggplot(pdat[is.finite(yval)], aes(x = xval, y = yval)) + geom_line() + 
       theme_bw() + xlab(fUpper(pdat[1, xvar])) + 
       facet_wrap(~yvar, scales = "free") + ggtitle("The Greeks") +
-      ylab("Value") 
+      ylab("Value of the Greek") 
   })
   
   interpretation <-  c("Value of the option",
