@@ -3,22 +3,18 @@
 ########################################################################
 
 # if necessary install the following packages with:
-# pkgs <- c("shiny", "shinydashboard", "ggplot2", "gridExtra",
-#           "data.table", "DT", "markdown", "rmarkdown", "knitr", 
-#           "RQuantLib", "magrittr")
+# pkgs <- c("data.table", "DT", "ggplot2", "knitr", "magrittr", "rmarkdown", 
+#           "RQuantLib", "shiny")
 # install.packages(pkgs)
 
-library(shiny)
-library(shinydashboard)
-library(ggplot2)
-library(gridExtra)
 library(data.table)
 library(DT)
-library(markdown)
-library(rmarkdown)
+library(ggplot2)
 library(knitr)
-library(RQuantLib)
 library(magrittr)
+library(rmarkdown)
+library(RQuantLib)
+library(shiny)
 
 source("R/functions.R")
 
