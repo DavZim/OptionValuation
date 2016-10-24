@@ -6,7 +6,6 @@ library(shiny)
 library(shinydashboard)
 library(ggplot2)
 library(gridExtra)
-#library(Cairo)
 library(data.table)
 library(DT)
 library(markdown)
@@ -15,12 +14,11 @@ library(knitr)
 library(RQuantLib)
 library(magrittr)
 
-setwd("/home/dzimm/ShinyApps/OptionValuation")
 source("R/functions.R")
 
-rmdfiles <- c("files/about.rmd", "files/text_intro_options.rmd")
+# rmdfiles <- c("files/about.rmd", "files/text_intro_options.rmd")
 # sapply(rmdfiles, knit, quiet = T)
-#sapply(rmdfiles, render, quiet = T)
+# sapply(rmdfiles, render, quiet = T)
 
 #options(shiny.usecairo = TRUE)
 
