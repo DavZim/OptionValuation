@@ -1,7 +1,13 @@
+########################################################################
+# PACKAGES and FUNCTIONS #
+########################################################################
+
+# if necessary install the following packages with:
 # pkgs <- c("shiny", "shinydashboard", "ggplot2", "gridExtra",
 #           "data.table", "DT", "markdown", "rmarkdown", "knitr", 
 #           "RQuantLib", "magrittr")
 # install.packages(pkgs)
+
 library(shiny)
 library(shinydashboard)
 library(ggplot2)
@@ -16,14 +22,16 @@ library(magrittr)
 
 source("R/functions.R")
 
+# uncomment this if the text-files should be recompiled
 # rmdfiles <- c("files/about.rmd", "files/text_intro_options.rmd")
 # sapply(rmdfiles, knit, quiet = T)
 # sapply(rmdfiles, render, quiet = T)
 
-#options(shiny.usecairo = TRUE)
-
+########################################################################
+# UI #
 ########################################################################
 
+# calc_ui for the calculation-tab
 calc_ui <- function() {
   sidebarLayout(
     sidebarPanel = sidebarPanel(
@@ -59,6 +67,7 @@ calc_ui <- function() {
   
 }
 
+# greek_ui for the display of the greeks
 greek_ui <- function() {
   sidebarLayout(
     sidebarPanel = sidebarPanel(
@@ -109,11 +118,12 @@ greek_ui <- function() {
   )
 }
 
-ui_file <- shinyUI(
+# main_file for the main-tabs 
+main_ui <- shinyUI(
   navbarPage("Options 101",
              tabPanel("Theory", #"asd"),
                       htmlOutput("theory")),
-                      #includeHTML("files/text_intro_options.html")),
+             #includeHTML("files/text_intro_options.html")),
              tabPanel("Option Calculations",
                       calc_ui()
              ),
@@ -129,12 +139,12 @@ ui_file <- shinyUI(
   )
 )
 
+########################################################################
+# SERVER #
+########################################################################
+
 server_fun <- function(input, output, session) {
   # init ----
-  # getPage<-function() {
-  #   return(includeHTML("include.html"))
-  # }
-  # output$inc<-renderUI({getPage()})
   output$theory <- renderUI({includeHTML("files/text_intro_options.html")})
   empty_dt_positions()
   render_plot1(output = output)
@@ -148,11 +158,6 @@ server_fun <- function(input, output, session) {
     opt.type <- input$I_basket_type
     opt.strike <- input$I_basket_strike 
     exp.date <- Sys.Date() + 365
-    
-    # opt.dir <- 1
-    # opt.type <- 1
-    # opt.strike <- 100
-    # exp.date <- Sys.Date() + 365
     
     opt.dir <- ifelse(opt.dir == 1, "Long", "Short")
     
@@ -210,7 +215,6 @@ server_fun <- function(input, output, session) {
   })
   
   # Single Options ----
-  
   option <- reactive(data.table(type = ifelse(input$I_single_type == 1, "call", 
                                               "put"),
                                 dir = ifelse(input$I_single_dir == 1, "long", 
@@ -227,25 +231,6 @@ server_fun <- function(input, output, session) {
   
   option_result <- reactive({
     dat <- option()
-    
-    # dat<- data.table(type = "call",
-    #                  dir = "long",
-    #                  strike = 100,
-    #                  underlying = 100,
-    #                  maturity = 1,
-    #                  dvd_yield = 0.01,
-    #                  rf = 0.01,
-    #                  vola = 0.01,
-    #                  eu_am = "European")
-    
-    # option_result <- EuropeanOption(type = dat$type,
-    #                                 underlying = dat$underlying,
-    #                                 strike = dat$strike,
-    #                                 dividendYield = dat$dvd_yield,
-    #                                 riskFreeRate = dat$rf,
-    #                                 maturity = dat$maturity,
-    #                                 volatility = dat$vola)
-     
     
     if (dat$eu_am == "European") {
       EuropeanOption(type = dat$type,
@@ -271,7 +256,7 @@ server_fun <- function(input, output, session) {
     dat <- option()
     
     var <- input$I_single_greek
-    # var <- "underlying"
+    
     val <- dat[, var, with = F] %>% as.numeric()
     
     input_parameters <- data.table(var = var,
@@ -279,7 +264,6 @@ server_fun <- function(input, output, session) {
                                    val_max = round(val * 1.25, 4))
     print(input_parameters)
     pdat <- sensitivityWrapper(input_parameters, dat)
-    print(pdat)
     return(pdat)
   })
   
@@ -293,19 +277,26 @@ server_fun <- function(input, output, session) {
       ylab("Value") 
   })
   
+  interpretation <-  c("Value of the option",
+                       "Sensitivity of the option value for a change in the underlying",
+                       "Sensitivity of the option delta for a change in the underlying",
+                       "Sensitivity of the option value for a change in the underlying's volatility",
+                       "Sensitivity of the option value for a change in t, the remaining time to maturity",
+                       "Sensitivity of the option value for a change in the risk-free interest rate",
+                       "Sensitivity of the option value for a change in the dividend yield")
+  
   df <- data.frame(greek = c("value", "delta", "gamma", "vega", "theta", "rho", "dividendRho"),
-                   meaning = c("Value of the option",
-                               "Sensitivity of the option value for a change in the underlying",
-                               "Sensitivity of the option delta for a change in the underlying",
-                               "Sensitivity of the option value for a change in the underlying's volatility",
-                               "Sensitivity of the option value for a change in t, the remaining time to maturity",
-                               "Sensitivity of the option value for a change in the risk-free interest rate",
-                               "Sensitivity of the option value for a change in the dividend yield"))
-  output$greek_theory <- DT::renderDataTable(df)
+                   interpretation = interpretation)
+  
+  df_dt <- datatable(df, rownames = NA, colnames = c("Greek", "Interpretation"))
+  
+  output$greek_theory <- DT::renderDataTable(df_dt)
   
   output$text_single_result <- renderPrint(option_result())
 }
 
-shinyApp(ui_file, server_fun)#, options = c("display.mode" = "showcase"))
+########################################################################
+# RUN APP #
+########################################################################
 
-
+shinyApp(main_ui, server_fun)
