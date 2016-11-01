@@ -1,5 +1,5 @@
-# OptionEvaluation
-A shiny application to explore the basics of option evaluation
+# Option Valuation
+A shiny application to explore the basics of option valuations
 
 To run the project either fork/download the files and run the `app.R`-file, or in R run `shiny::runGitHub('OptionValuation', 'DavZim')`. 
 
