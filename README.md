@@ -1,7 +1,7 @@
 # OptionEvaluation
 A shiny application to explore the basics of option evaluation
 
-To run the project either fork/download the files and run the `app.R`-file, or in R run `shiny::runGitHub('OptionEvaluation', 'DavZim')`. 
+To run the project either fork/download the files and run the `app.R`-file, or in R run `shiny::runGitHub('OptionValuation', 'DavZim')`. 
 
 In order to run the project properly, you need to have the following packages installed: `data.table`, `DT`, `ggplot2`, `knitr`, `magrittr`, `rmarkdown`, `RQuantLib`, and `shiny`.
 
