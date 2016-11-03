@@ -138,7 +138,15 @@ sensitivityInputs <- function(dat, var, val_min, val_max, n_vals = 100) {
     
     assign(paste0("r_", var), value)
     if (dat$eu_am == "European") {
-      tmp <- EuropeanOption(type = r_type,
+      # tmp <- EuropeanOption(type = r_type,
+      #                       underlying = r_underlying,
+      #                       strike = r_strike,
+      #                       dividendYield = r_dvd_yield,
+      #                       riskFreeRate = r_rf,
+      #                       maturity = r_maturity,
+      #                       volatility = r_vola) %>% as.numeric
+      
+      tmp <- fEuropean(type = r_type,
                             underlying = r_underlying,
                             strike = r_strike,
                             dividendYield = r_dvd_yield,
@@ -146,16 +154,24 @@ sensitivityInputs <- function(dat, var, val_min, val_max, n_vals = 100) {
                             maturity = r_maturity,
                             volatility = r_vola) %>% as.numeric
     } else {
-      tmp <- AmericanOption(type = r_type,
+      # tmp <- AmericanOption(type = r_type,
+      #                       underlying = r_underlying,
+      #                       strike = r_strike,
+      #                       dividendYield = r_dvd_yield,
+      #                       riskFreeRate = r_rf,
+      #                       maturity = r_maturity,
+      #                       volatility = r_vola,
+      #                       engine = "CrankNicolson") %>% as.numeric
+      tmp <- fAmerican(type = r_type,
                             underlying = r_underlying,
                             strike = r_strike,
                             dividendYield = r_dvd_yield,
                             riskFreeRate = r_rf,
                             maturity = r_maturity,
-                            volatility = r_vola,
-                            engine = "CrankNicolson") %>% as.numeric
+                            volatility = r_vola) %>% as.numeric
     }
-    names(tmp) <- c("value", "delta", "gamma", "vega", "theta", "rho", "divRho")
+    names(tmp) <- c("value", "delta", "gamma", "vega", "theta", "rho")
+    # names(tmp) <- c("value", "delta", "gamma", "vega", "theta", "rho", "divRho")
     data.table(t(tmp))
   }) %>% rbindlist
   
@@ -278,5 +294,33 @@ create_tree <- function(n_steps, type = "call", s_0 = 100, tick = 10, k = 100, r
     scale_y_continuous(limits = c(-1,1) + range(nodes$y))
   
 }
-
+fEuropean <- function(type, underlying, strike, dividendYield, riskFreeRate, maturity, volatility) {
+  type <- tolower(type)
+  stopifnot(type %in% c("call", "put"))
+  
+  val <- GBSOption(TypeFlag = substr(type, 1, 1), S = underlying, X = strike, Time = maturity, r = riskFreeRate, 
+                   b = riskFreeRate - dividendYield, sigma = volatility)
+  price <- val@price
+  
+  greeks <- c("delta", "gamma", "vega", "theta", "rho")
+  greek_res <- lapply(greeks, function(greek) {
+    GBSGreeks(Selection = greek, TypeFlag = substr(type, 1, 1), S = underlying, X = strike, Time = maturity, 
+              r = riskFreeRate, b =  riskFreeRate - dividendYield, sigma = volatility)
+  })
+  names(greek_res) <- greeks
+  return(c(value = price, unlist(greek_res)))
+}
+fAmerican <- function(type, underlying, strike, dividendYield, riskFreeRate, maturity, volatility) {
+  type <- tolower(type)
+  stopifnot(type %in% c("call", "put"))
+  
+  val <-  BAWAmericanApproxOption(TypeFlag = substr(type, 1, 1), S = underlying, X = strike, Time = maturity, 
+                                  r = riskFreeRate, b = riskFreeRate - dividendYield, sigma = volatility)
+  price <- val@price
+  
+  greeks <- c("delta", "gamma", "vega", "theta", "rho")
+  greek_res <- rep(NA, length(greeks))
+  names(greek_res) <- greeks
+  return(c(value = price, unlist(greek_res)))
+}
 

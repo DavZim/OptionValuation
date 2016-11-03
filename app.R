@@ -13,8 +13,10 @@ library(ggplot2)
 library(knitr)
 library(magrittr)
 library(rmarkdown)
-library(RQuantLib)
+#library(RQuantLib)
 library(shiny)
+
+library(fOptions)
 
 source("R/functions.R")
 
@@ -297,22 +299,37 @@ server_fun <- function(input, output, session) {
     dat <- option()
     
     if (dat$eu_am == "European") {
-      EuropeanOption(type = dat$type,
+      # EuropeanOption(type = dat$type,
+      #                underlying = dat$underlying,
+      #                strike = dat$strike,
+      #                dividendYield = dat$dvd_yield,
+      #                riskFreeRate = dat$rf,
+      #                maturity = dat$maturity,
+      #                volatility = dat$vola)
+      fEuropean(type = dat$type,
                      underlying = dat$underlying,
                      strike = dat$strike,
                      dividendYield = dat$dvd_yield,
                      riskFreeRate = dat$rf,
                      maturity = dat$maturity,
-                     volatility = dat$vola)
+                     volatility = dat$vola) %>% round(4)
     } else {
-      AmericanOption(type = dat$type,
+      fAmerican(type = dat$type,
                      underlying = dat$underlying,
                      strike = dat$strike,
                      dividendYield = dat$dvd_yield,
                      riskFreeRate = dat$rf,
                      maturity = dat$maturity,
-                     volatility = dat$vola,
-                     engine = "CrankNicolson")
+                     volatility = dat$vola) %>% round(4)
+      
+      # AmericanOption(type = dat$type,
+      #                underlying = dat$underlying,
+      #                strike = dat$strike,
+      #                dividendYield = dat$dvd_yield,
+      #                riskFreeRate = dat$rf,
+      #                maturity = dat$maturity,
+      #                volatility = dat$vola,
+      #                engine = "CrankNicolson")
     }
   })
   
@@ -326,19 +343,34 @@ server_fun <- function(input, output, session) {
     input_parameters <- data.table(var = var,
                                    val_min = round(val * 0.75, 4),
                                    val_max = round(val * 1.25, 4))
-    print(input_parameters)
-    pdat <- sensitivityWrapper(input_parameters, dat)
+    # print(input_parameters)
+    
+    # no values for the american option.. return emtpy dt
+    if (input$I_greek_eu_am == 2) {
+      n0 <- numeric(0)
+      pdat <- data.table(xvar = n0, xval = n0, yvar = n0, yval = n0)
+    } else {
+      pdat <- sensitivityWrapper(input_parameters, dat)
+    }
+    
     return(pdat)
   })
   
   output$plot_greeks <- renderPlot({
     
     pdat <- greek_plot_data()
-    
-    ggplot(pdat[is.finite(yval)], aes(x = xval, y = yval)) + geom_line() + 
-      theme_bw() + xlab(fUpper(pdat[1, xvar])) + 
-      facet_wrap(~yvar, scales = "free") + ggtitle("The Greeks") +
-      ylab("Value of the Greek") 
+    cat(nrow(pdat))
+    if (nrow(pdat) == 0) {
+      empty_df <- data.frame(x = 0, y = 0, 
+                             label = "Greeks currently not available for American Options")
+      ggplot(empty_df, aes(x = x, y = y, label = label)) +
+        geom_text() + theme_void()
+    } else {
+      ggplot(pdat[is.finite(yval)], aes(x = xval, y = yval)) + geom_line() + 
+        theme_bw() + xlab(fUpper(pdat[1, xvar])) + 
+        facet_wrap(~yvar, scales = "free") + ggtitle("The Greeks") +
+        ylab("Value of the Greek") 
+    }
   })
   
   interpretation <-  c("Value of the option",
