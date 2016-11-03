@@ -6,12 +6,12 @@ To run the project either fork/download the files and run the `app.R`-file, or i
 shiny::runGitHub('OptionValuation', 'DavZim')
 ```
 
-In order to run the project properly, you need to have the following packages installed: `data.table`, `DT`, `ggplot2`, `knitr`, `magrittr`, `rmarkdown`, `RQuantLib`, and `shiny`.
+In order to run the project properly, you need to have the following packages installed: `data.table`, `DT`, `ggplot2`, `knitr`, `magrittr`, `rmarkdown`, `fOptions`, and `shiny`.
 
 To install all packages you can also use 
 
 ```r
-pkgs <- c("data.table", "DT", "ggplot2", "knitr", "magrittr", "rmarkdown", "RQuantLib", "shiny")
+pkgs <- c("data.table", "DT", "ggplot2", "knitr", "magrittr", "rmarkdown", "fOptions", "shiny")
 install.packages(pkgs)
 ```
 
