@@ -222,7 +222,6 @@ server_fun <- function(input, output, session) {
     opt.dir <- input$I_basket_dir
     opt.type <- input$I_basket_type
     opt.strike <- input$I_basket_strike 
-    exp.date <- Sys.Date() + 365
     
     opt.dir <- ifelse(opt.dir == 1, "Long", "Short")
     
@@ -236,13 +235,21 @@ server_fun <- function(input, output, session) {
     }
     
     if (opt.type != "Underlying") {
-      opt.premium <- EuropeanOption(type = tolower(opt.type),
+      cat(tolower(opt.type))
+      opt.premium <- fEuropean(type = tolower(opt.type),
                                     underlying = 100,
                                     strike = opt.strike,
                                     dividendYield = 0,
                                     riskFreeRate = 0,
-                                    maturity = (exp.date - Sys.Date())/364,
-                                    volatility = 0.2)$value %>% round(4)
+                                    maturity = 1,
+                                    volatility = 0.2)[["value"]] %>% round(4)
+      # opt.premium <- EuropeanOption(type = tolower(opt.type),
+      #                               underlying = 100,
+      #                               strike = opt.strike,
+      #                               dividendYield = 0,
+      #                               riskFreeRate = 0,
+      #                               maturity = (exp.date - Sys.Date())/364,
+      #                               volatility = 0.2)$value %>% round(4)
       
     } else {
       opt.premium <- 0
@@ -250,7 +257,7 @@ server_fun <- function(input, output, session) {
     
     tmp <- data.table(name = paste0(opt.dir, " ", 
                                     opt.type, " ", 
-                                    opt.strike, exp.date),
+                                    opt.strike),
                       type = opt.type,
                       dir = opt.dir,
                       strike = opt.strike,
