@@ -13,7 +13,6 @@ library(ggplot2)
 library(knitr)
 library(magrittr)
 library(rmarkdown)
-#library(RQuantLib)
 library(shiny)
 
 library(fOptions)
@@ -21,7 +20,7 @@ library(fOptions)
 source("R/functions.R")
 
 # uncomment this if the text-files should be recompiled
-# rmdfiles <- c("files/about.rmd", "files/text_intro_options.rmd", "files/text_intro_valuation.rmd")
+# rmdfiles <- c("files/about.Rmd", "files/text_intro_options.Rmd", "files/text_intro_valuation.Rmd")
 # sapply(rmdfiles, knit, quiet = T)
 # sapply(rmdfiles, render, quiet = T)
 
@@ -49,19 +48,19 @@ payoff_ui <- function() {
       textOutput("text_new_option"),
       br(),
       helpText("The premium is automatically calculated for a given volatility\n",
-      "and for an underlying currently worth $100.")
+               "and for an underlying currently worth $100.")
     ),
     mainPanel = mainPanel(
-               tabsetPanel("asd",
-                           tabPanel("Theory",
-                                    htmlOutput("payoff_theory")),
-                           tabPanel("Figure",
-                                    plotOutput("p_payoffs")
-                           ),
-                           tabPanel("Data",
-                                    DT::dataTableOutput("t_option_basket")
-                           )
-               )
+      tabsetPanel(
+        tabPanel("Theory",
+                 htmlOutput("payoff_theory")),
+        tabPanel("Figure",
+                 plotOutput("p_payoffs")
+        ),
+        tabPanel("Data",
+                 DT::dataTableOutput("t_option_basket")
+        )
+      )
     )
   )
   
@@ -87,108 +86,105 @@ greek_ui <- function() {
                   min = 1, max = 250),
       sliderInput("I_greek_maturity", "Maturity (in years)", value = 1,
                   min = 0, max = 5, step = 0.1),
-      # dateInput("I_greek_maturity", "Maturity", value = Sys.Date() + 31,
-      #           min = Sys.Date() + 1, max = Sys.Date() + 365 * 2),
       sliderInput("I_greek_dvd_yield", "Dividend Yield (in %)", value = 5,
                   min = 0, max = 20),
       sliderInput("I_greek_rf", "Risk-Free Rate (in %)", value = 1,
                   min = 0, max = 20),
       sliderInput("I_greek_vola", "Volatility (in %)", value = 1,
                   min = 0, max = 20)
-    ),
+    ), 
     mainPanel = mainPanel(
-      tabsetPanel("",
-                  tabPanel("Theory",
-                           DT::dataTableOutput("greek_theory")
-                  ),
-                  tabPanel("Text Result",
-                           verbatimTextOutput("text_single_result")
-                  ),
-                  tabPanel("The Greeks ",
-                           radioButtons("I_greek_var", "Variable",
-                                        list("Underlying" = "underlying",
-                                             "Strike" = "strike",
-                                             "Dividend Yield" = "dvd_yield",
-                                             "Risk-Free Rate" = "rf",
-                                             "Maturity" = "maturity",
-                                             "Volatility" = "vola"),
-                                        inline = T),
-                           plotOutput("plot_greeks"),
-                           "Note: the greeks refer mostly to the cases where the variable is the underlying."
-                  )
+      tabsetPanel(
+        tabPanel("Theory",
+                 DT::dataTableOutput("greek_theory")
+        ),
+        tabPanel("Text Result",
+                 verbatimTextOutput("text_single_result")
+        ),
+        tabPanel("The Greeks ",
+                 radioButtons("I_greek_var", "Variable",
+                              list("Underlying" = "underlying",
+                                   "Strike" = "strike",
+                                   "Dividend Yield" = "dvd_yield",
+                                   "Risk-Free Rate" = "rf",
+                                   "Maturity" = "maturity",
+                                   "Volatility" = "vola"),
+                              inline = T),
+                 plotOutput("plot_greeks"),
+                 "Note: the greeks refer mostly to the cases where the variable is the underlying."
+        )
       )
     )
   )
 }
 
+
 # price_ui for the display of the greeks
 price_ui <- function() {
-  fluidPage(tabsetPanel("",
-                        tabPanel("Theory",
-                                 htmlOutput("price_theory")
-                        ),
-                        tabPanel("Binomial Model",
-                                 sidebarLayout(
-                                     sidebarPanel = sidebarPanel(
-                                       h3("Binomial Input"),
-                                       numericInput("I_price_n_steps", "Number of Steps",
-                                                    min = 1, max = 10, value = 3),
-                                       radioButtons("I_price_type", "Option",
-                                                    list("Call" = 1, "Put" = 2),
-                                                    selected = 1, inline = T),
-                                       sliderInput("I_price_strike", "Strike Price (in $)", value = 100,
-                                                   min = 1, max = 250),
-                                       sliderInput("I_price_value_underlying", "Current Value Underlying (in $)",
-                                                   value = 100,
-                                                   min = 1, max = 250),
-                                       sliderInput("I_price_tick", "Tick (in $)", value = 10,
-                                                   min = 0, max = 50),
-                                       sliderInput("I_price_rf", "Risk-Free Rate (in %)", value = 1,
-                                                   min = 0, max = 20)
-                                     ),
-                                     mainPanel = mainPanel(
-                                       plotOutput("price_binomial")
-                                     )
-                                   )
-                        ),
-                        tabPanel("Black-Scholes Model",
-                                 sidebarLayout(
-                                   sidebarPanel = sidebarPanel(
-                                     h3("Black-Scholes Input"),
-                                     radioButtons("I_bs_type", "Option",
-                                                  list("Call" = 1, "Put" = 2),
-                                                  selected = 1, inline = T),
-                                     sliderInput("I_bs_strike", "Strike Price (in $)", value = 100,
-                                                 min = 1, max = 250),
-                                     sliderInput("I_bs_value_underlying", "Current Value Underlying (in $)", 
-                                                 value = 100,
-                                                 min = 1, max = 250),
-                                     sliderInput("I_bs_maturity", "Maturity (in years)", value = 1,
-                                                 min = 0, max = 5, step = 0.1),
-                                     sliderInput("I_bs_rf", "Risk-Free Rate (in %)", value = 1,
-                                                 min = 0, max = 20, step = 0.1),
-                                     sliderInput("I_bs_vola", "Volatility (in %)", value = 1,
-                                                 min = 0, max = 20, step = 0.1)
-                                   ),
-                                   mainPanel = mainPanel(
-                                     uiOutput("price_bs")
-                                   )
-                                 )
-                        )
-            )
+  fluidPage(tabsetPanel(
+    tabPanel("Theory",
+             htmlOutput("price_theory")
+    ),
+    tabPanel("Binomial Model",
+             sidebarLayout(
+               sidebarPanel = sidebarPanel(
+                 h3("Binomial Input"),
+                 numericInput("I_price_n_steps", "Number of Steps",
+                              min = 1, max = 10, value = 3),
+                 radioButtons("I_price_type", "Option",
+                              list("Call" = 1, "Put" = 2),
+                              selected = 1, inline = T),
+                 sliderInput("I_price_strike", "Strike Price (in $)", value = 100,
+                             min = 1, max = 250),
+                 sliderInput("I_price_value_underlying", "Current Value Underlying (in $)",
+                             value = 100,
+                             min = 1, max = 250),
+                 sliderInput("I_price_tick", "Tick (in $)", value = 10,
+                             min = 0, max = 50),
+                 sliderInput("I_price_rf", "Risk-Free Rate (in %)", value = 1,
+                             min = 0, max = 20)
+               ),
+               mainPanel = mainPanel(
+                 plotOutput("price_binomial")
+               )
+             )
+    ),
+    tabPanel("Black-Scholes Model",
+             sidebarLayout(
+               sidebarPanel = sidebarPanel(
+                 h3("Black-Scholes Input"),
+                 radioButtons("I_bs_type", "Option",
+                              list("Call" = 1, "Put" = 2),
+                              selected = 1, inline = T),
+                 sliderInput("I_bs_strike", "Strike Price (in $)", value = 100,
+                             min = 1, max = 250),
+                 sliderInput("I_bs_value_underlying", "Current Value Underlying (in $)", 
+                             value = 100,
+                             min = 1, max = 250),
+                 sliderInput("I_bs_maturity", "Maturity (in years)", value = 1,
+                             min = 0, max = 5, step = 0.1),
+                 sliderInput("I_bs_rf", "Risk-Free Rate (in %)", value = 1,
+                             min = 0, max = 20, step = 0.1),
+                 sliderInput("I_bs_vola", "Volatility (in %)", value = 1,
+                             min = 0, max = 20, step = 0.1)
+               ),
+               mainPanel = mainPanel(
+                 uiOutput("price_bs")
+               )
+             )
+    )
+  )
   )
 }
+
 
 # main_file for the main-tabs 
 main_ui <- shinyUI(
   navbarPage("Options 101",
-             #tabPanel("Theory", #"asd"),
-            #          htmlOutput("theory")),
-             #includeHTML("files/text_intro_options.html")),
              tabPanel("Payoff",
                       payoff_ui()
              ),   
-             tabPanel("Valuation",
+             tabPanel("Valuation", 
                       price_ui()
              ),
              tabPanel("Price and the Greeks",
@@ -199,7 +195,7 @@ main_ui <- shinyUI(
                                "David Zimmermann", br(),
                                "All Rights Reserved", br(),
                                "david.zimmermann[at]zu.de", br(),
-                               "All feedback welcome!"))#includeHTML("about.html"))
+                               "All feedback welcome!"))
   )
 )
 
@@ -237,20 +233,12 @@ server_fun <- function(input, output, session) {
     if (opt.type != "Underlying") {
       cat(tolower(opt.type))
       opt.premium <- fEuropean(type = tolower(opt.type),
-                                    underlying = 100,
-                                    strike = opt.strike,
-                                    dividendYield = 0,
-                                    riskFreeRate = 0,
-                                    maturity = 1,
-                                    volatility = 0.2)[["value"]] %>% round(4)
-      # opt.premium <- EuropeanOption(type = tolower(opt.type),
-      #                               underlying = 100,
-      #                               strike = opt.strike,
-      #                               dividendYield = 0,
-      #                               riskFreeRate = 0,
-      #                               maturity = (exp.date - Sys.Date())/364,
-      #                               volatility = 0.2)$value %>% round(4)
-      
+                               underlying = 100,
+                               strike = opt.strike,
+                               dividendYield = 0,
+                               riskFreeRate = 0,
+                               maturity = 1,
+                               volatility = 0.2)[["value"]] %>% round(4)
     } else {
       opt.premium <- 0
     }
@@ -294,8 +282,6 @@ server_fun <- function(input, output, session) {
                                 strike = input$I_greek_strike,
                                 underlying = input$I_greek_value_underlying,
                                 maturity = input$I_greek_maturity,
-                                # as.numeric(input$I_greek_maturity -
-                                #                      Sys.Date()) / 365,
                                 dvd_yield = input$I_greek_dvd_yield / 100,
                                 rf = input$I_greek_rf / 100,
                                 vola = input$I_greek_vola / 100,
@@ -306,37 +292,21 @@ server_fun <- function(input, output, session) {
     dat <- option()
     
     if (dat$eu_am == "European") {
-      # EuropeanOption(type = dat$type,
-      #                underlying = dat$underlying,
-      #                strike = dat$strike,
-      #                dividendYield = dat$dvd_yield,
-      #                riskFreeRate = dat$rf,
-      #                maturity = dat$maturity,
-      #                volatility = dat$vola)
       fEuropean(type = dat$type,
-                     underlying = dat$underlying,
-                     strike = dat$strike,
-                     dividendYield = dat$dvd_yield,
-                     riskFreeRate = dat$rf,
-                     maturity = dat$maturity,
-                     volatility = dat$vola) %>% round(4)
+                underlying = dat$underlying,
+                strike = dat$strike,
+                dividendYield = dat$dvd_yield,
+                riskFreeRate = dat$rf,
+                maturity = dat$maturity,
+                volatility = dat$vola) %>% round(4)
     } else {
       fAmerican(type = dat$type,
-                     underlying = dat$underlying,
-                     strike = dat$strike,
-                     dividendYield = dat$dvd_yield,
-                     riskFreeRate = dat$rf,
-                     maturity = dat$maturity,
-                     volatility = dat$vola) %>% round(4)
-      
-      # AmericanOption(type = dat$type,
-      #                underlying = dat$underlying,
-      #                strike = dat$strike,
-      #                dividendYield = dat$dvd_yield,
-      #                riskFreeRate = dat$rf,
-      #                maturity = dat$maturity,
-      #                volatility = dat$vola,
-      #                engine = "CrankNicolson")
+                underlying = dat$underlying,
+                strike = dat$strike,
+                dividendYield = dat$dvd_yield,
+                riskFreeRate = dat$rf,
+                maturity = dat$maturity,
+                volatility = dat$vola) %>% round(4)
     }
   })
   
@@ -350,7 +320,6 @@ server_fun <- function(input, output, session) {
     input_parameters <- data.table(var = var,
                                    val_min = round(val * 0.75, 4),
                                    val_max = round(val * 1.25, 4))
-    # print(input_parameters)
     
     # no values for the american option.. return emtpy dt
     if (input$I_greek_eu_am == 2) {
@@ -401,12 +370,6 @@ server_fun <- function(input, output, session) {
   # Prices & Valuation
   
   output$price_binomial <- renderPlot({
-    # cat("n_steps: ", input$I_price_n_steps,
-    #     "\ntype: ", input$I_price_type,
-    #     "\ns_0: ", input$I_price_value_underlying,
-    #     "\ntick: ", input$I_price_tick,
-    #     "\nk: ", input$I_price_strike,
-    #     "\nrf: ", input$I_price_rf,"\n")
     create_tree(n_steps = input$I_price_n_steps,
                 type = ifelse(input$I_price_type == 1, "call", "put"),
                 s_0 = input$I_price_value_underlying, 
