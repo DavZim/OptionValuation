@@ -191,10 +191,9 @@ main_ui <- shinyUI(
                       greek_ui()
              ),
              tabPanel("About",
-                      helpText("v 0.1 @ 2016", br(), 
+                      helpText("v 0.1 @ 2017", br(), 
                                "David Zimmermann", br(),
-                               "All Rights Reserved", br(),
-                               "david.zimmermann[at]zu.de", br(),
+                               "david_j_zimmermann[at]hotmail.com", br(),
                                "All feedback welcome!"))
   )
 )
